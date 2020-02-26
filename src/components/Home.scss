@@ -1,0 +1,17 @@
+.Home {
+  .videos {
+    margin: 70px auto 20px;
+    display: grid;
+    grid-row-gap: 20px;
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1366px;
+  }
+
+  .MuiCardContent-root {
+    height: 100px;
+  }
+}
+
+.Home::-webkit-scrollbar {
+  width: 0 !important;
+}
