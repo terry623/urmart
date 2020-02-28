@@ -38,7 +38,7 @@ const Videos = ({ currentResults }) => {
               image={snippet.thumbnails.medium.url}
             />
             <CardContent>
-              <h2>{snippet.title}</h2>
+              <h3>{snippet.title}</h3>
             </CardContent>
           </CardActionArea>
         </Card>

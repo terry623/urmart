@@ -11,7 +11,6 @@ import Pagination from '@material-ui/lab/Pagination';
 import { connect } from 'react-redux';
 
 import { getSearchResults } from '../states/actions/searchResults';
-
 import Videos from './Videos';
 
 import './Home.scss';
@@ -70,15 +69,6 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const debounce = (callback, wait) => {
-  let timeout;
-  return (...args) => {
-    const context = this;
-    clearTimeout(timeout);
-    timeout = setTimeout(() => callback.apply(context, args), wait);
-  };
-};
-
 const Home = ({
   searchResultsLoading,
   allSearchResults,
@@ -88,48 +78,69 @@ const Home = ({
   const [currentResults, setCurrentResults] = useState([]);
   const [currentKeyword, setCurrentKeyword] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const searchBarId = 'search-bar';
 
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
+  const handlePageChange = (e, v) => {
+    setCurrentPage(v);
   };
 
-  const handleKeywordChange = () => {
-    const { value } = document.getElementById(searchBarId);
-    setCurrentKeyword(value);
+  const handleKeywordChange = e => {
+    setCurrentKeyword(e.target.value);
   };
 
-  useEffect(() => {
-    async function fetchSearchResults() {
-      const { items } = await getSearchResultsFromProps({
-        keyword: currentKeyword,
-        page: 1,
-        pageToken: '',
-      });
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0 });
+  };
+
+  const fetchResultsAndSet = async (keyword, page = 1, pageToken = '') => {
+    const results = await getSearchResultsFromProps({
+      keyword,
+      page,
+      pageToken,
+    });
+    if (results) setCurrentResults(results.items);
+  };
+
+  const fetchSearchResultsByKeyword = async e => {
+    if (e.key === 'Enter') {
+      scrollToTop();
+
+      if (currentKeyword === '') {
+        setCurrentResults([]);
+        return;
+      }
+
       setCurrentPage(1);
-      setCurrentResults(items);
-    }
 
-    fetchSearchResults();
-  }, [currentKeyword]);
+      if (allSearchResults[currentKeyword]) {
+        const page = allSearchResults[currentKeyword][1];
+        if (!page) return;
+        if (!page.pageToken) {
+          setCurrentResults(page.items);
+          return;
+        }
+      }
+
+      fetchResultsAndSet(currentKeyword);
+    }
+  };
 
   useEffect(() => {
     async function fetchSearchResults() {
+      if (currentKeyword === '') return;
+      scrollToTop();
+
       let targetPageToken = '';
       if (allSearchResults[currentKeyword]) {
         const page = allSearchResults[currentKeyword][currentPage];
+        if (!page) return;
         if (!page.pageToken) {
           setCurrentResults(page.items);
           return;
         }
         targetPageToken = page.pageToken;
       }
-      const { items } = await getSearchResultsFromProps({
-        keyword: currentKeyword,
-        page: currentPage,
-        pageToken: targetPageToken,
-      });
-      setCurrentResults(items);
+
+      fetchResultsAndSet(currentKeyword, currentPage, targetPageToken);
     }
 
     fetchSearchResults();
@@ -148,14 +159,14 @@ const Home = ({
             </div>
             <InputBase
               placeholder="Search…"
-              id={searchBarId}
               autoFocus
-              onChange={debounce(e => handleKeywordChange(e), 1000)}
+              value={currentKeyword}
+              onChange={handleKeywordChange}
+              onKeyPress={fetchSearchResultsByKeyword}
               classes={{
                 root: classes.inputRoot,
                 input: classes.inputInput,
               }}
-              inputProps={{ 'aria-label': 'search' }}
             />
           </div>
         </Toolbar>
@@ -166,7 +177,7 @@ const Home = ({
         </div>
       ) : (
         <Fragment>
-          {currentResults && (
+          {currentResults.length > 0 ? (
             <Fragment>
               <Videos currentResults={currentResults} />
               <Pagination
@@ -177,6 +188,8 @@ const Home = ({
                 className={classes.pagination}
               />
             </Fragment>
+          ) : (
+            <h3 className="description">輸入關鍵字，按下 Enter 即可查詢 😎</h3>
           )}
         </Fragment>
       )}

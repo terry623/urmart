@@ -18,7 +18,7 @@ const setSearchResults = ({ keyword, page, results }) => ({
   payload: { keyword, page, results },
 });
 
-export function getSearchResults({ keyword, page, pageToken = '' }) {
+export function getSearchResults({ keyword, page, pageToken }) {
   return dispatch => {
     dispatch(startLoadingSearchResults());
 

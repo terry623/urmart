@@ -29,10 +29,12 @@ const searchResults = (state = initialState, action) => {
         newAllSearchResults[keyword] = [];
       }
 
-      newAllSearchResults[keyword][page] = results;
-      newAllSearchResults[keyword][page + 1] = {
-        pageToken: results.nextPageToken,
-      };
+      if (results) {
+        newAllSearchResults[keyword][page] = results;
+        newAllSearchResults[keyword][page + 1] = {
+          pageToken: results.nextPageToken,
+        };
+      }
 
       return {
         ...state,
