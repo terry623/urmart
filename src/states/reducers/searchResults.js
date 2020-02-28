@@ -22,10 +22,21 @@ const searchResults = (state = initialState, action) => {
         searchResultsLoading: false,
       };
     case SET_SEARCH_RESULTS: {
-      const { results } = action.payload;
-      // console.log(results);
+      const { keyword, page, results } = action.payload;
+
+      const newAllSearchResults = { ...state.allSearchResults };
+      if (!newAllSearchResults[keyword]) {
+        newAllSearchResults[keyword] = [];
+      }
+
+      newAllSearchResults[keyword][page] = results;
+      newAllSearchResults[keyword][page + 1] = {
+        pageToken: results.nextPageToken,
+      };
+
       return {
         ...state,
+        allSearchResults: newAllSearchResults,
       };
     }
     default:

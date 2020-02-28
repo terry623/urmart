@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Toolbar from '@material-ui/core/Toolbar';
 import AppBar from '@material-ui/core/AppBar';
@@ -7,6 +7,7 @@ import { fade, makeStyles } from '@material-ui/core/styles';
 import SearchIcon from '@material-ui/icons/Search';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
+import Pagination from '@material-ui/lab/Pagination';
 import { connect } from 'react-redux';
 
 import { getSearchResults } from '../states/actions/searchResults';
@@ -61,29 +62,50 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
     marginTop: 100,
   },
+  pagination: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginTop: 30,
+    marginBottom: 30,
+  },
 }));
 
 const Home = ({
   searchResultsLoading,
+  allSearchResults,
   getSearchResults: getSearchResultsFromProps,
 }) => {
   const classes = useStyles();
   const [currentResults, setCurrentResults] = useState([]);
-  const [currentKeyword, setCurrentKeyword] = useState('');
+  const [currentKeyword, setCurrentKeyword] = useState('dogs');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // FIXME: 之後改成看關鍵字才 call
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  // FIXME: 之後還要加上看關鍵字才 call
   useEffect(() => {
     async function fetchSearchResults() {
-      const results = await getSearchResultsFromProps(
-        currentKeyword,
-        currentPage
-      );
-      setCurrentResults(results);
+      let targetPageToken = '';
+      if (allSearchResults[currentKeyword]) {
+        const page = allSearchResults[currentKeyword][currentPage];
+        if (!page.pageToken) {
+          setCurrentResults(page.items);
+          return;
+        }
+        targetPageToken = page.pageToken;
+      }
+      const { items } = await getSearchResultsFromProps({
+        keyword: currentKeyword,
+        page: currentPage,
+        pageToken: targetPageToken,
+      });
+      setCurrentResults(items);
     }
 
     fetchSearchResults();
-  }, []);
+  }, [currentPage]);
 
   return (
     <div className="Home">
@@ -112,13 +134,27 @@ const Home = ({
           <CircularProgress />
         </div>
       ) : (
-        <Videos currentResults={currentResults} />
+        <Fragment>
+          {currentResults && (
+            <Fragment>
+              <Videos currentResults={currentResults} />
+              <Pagination
+                count={3}
+                page={currentPage}
+                onChange={handlePageChange}
+                color="primary"
+                className={classes.pagination}
+              />
+            </Fragment>
+          )}
+        </Fragment>
       )}
     </div>
   );
 };
 
 Home.propTypes = {
+  allSearchResults: PropTypes.object.isRequired,
   getSearchResults: PropTypes.func.isRequired,
   searchResultsLoading: PropTypes.bool.isRequired,
 };

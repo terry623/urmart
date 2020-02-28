@@ -6,8 +6,6 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 
-// import VideoCard from './VideoCard';
-
 const useStyles = makeStyles({
   root: {
     maxWidth: 300,
@@ -22,14 +20,25 @@ const useStyles = makeStyles({
 const Videos = ({ currentResults }) => {
   const classes = useStyles();
 
+  const openLink = videoId => {
+    window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+  };
+
   return (
     <div className="videos">
-      {currentResults.map(result => (
-        <Card className={classes.root}>
+      {currentResults.map(({ id, snippet }) => (
+        <Card
+          key={id.videoId}
+          className={classes.root}
+          onClick={() => openLink(id.videoId)}
+        >
           <CardActionArea>
-            <CardMedia className={classes.media} image="" />
+            <CardMedia
+              className={classes.media}
+              image={snippet.thumbnails.medium.url}
+            />
             <CardContent>
-              <h2>{result}</h2>
+              <h2>{snippet.title}</h2>
             </CardContent>
           </CardActionArea>
         </Card>
