@@ -70,6 +70,15 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+const debounce = (callback, wait) => {
+  let timeout;
+  return (...args) => {
+    const context = this;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => callback.apply(context, args), wait);
+  };
+};
+
 const Home = ({
   searchResultsLoading,
   allSearchResults,
@@ -77,14 +86,33 @@ const Home = ({
 }) => {
   const classes = useStyles();
   const [currentResults, setCurrentResults] = useState([]);
-  const [currentKeyword, setCurrentKeyword] = useState('dogs');
+  const [currentKeyword, setCurrentKeyword] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const searchBarId = 'search-bar';
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
 
-  // FIXME: 之後還要加上看關鍵字才 call
+  const handleKeywordChange = () => {
+    const { value } = document.getElementById(searchBarId);
+    setCurrentKeyword(value);
+  };
+
+  useEffect(() => {
+    async function fetchSearchResults() {
+      const { items } = await getSearchResultsFromProps({
+        keyword: currentKeyword,
+        page: 1,
+        pageToken: '',
+      });
+      setCurrentPage(1);
+      setCurrentResults(items);
+    }
+
+    fetchSearchResults();
+  }, [currentKeyword]);
+
   useEffect(() => {
     async function fetchSearchResults() {
       let targetPageToken = '';
@@ -120,6 +148,9 @@ const Home = ({
             </div>
             <InputBase
               placeholder="Search…"
+              id={searchBarId}
+              autoFocus
+              onChange={debounce(e => handleKeywordChange(e), 1000)}
               classes={{
                 root: classes.inputRoot,
                 input: classes.inputInput,

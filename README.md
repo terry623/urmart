@@ -1,8 +1,9 @@
 # UrMart
 
-## Introduction
 此為應徵 UrMart 的 Front-end Engineer 作業
 
+## Introduction
+1. Redux 狀態管理
 
 
 ## Installation
