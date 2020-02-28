@@ -4,8 +4,8 @@
 
 ## Introduction
 1. 右上角欄位輸入關鍵字，按下 Enter 可搜尋影片
-2. 使用 Redux 快取搜尋結果
-3. 點選影片後，可外連至該影片的 YouTube 網站
+2. 點選影片後，可外連至該影片的 YouTube 網站
+3. 使用 Redux 快取搜尋結果
 4. 有基本 RWD 設計
 
 ## Installation
